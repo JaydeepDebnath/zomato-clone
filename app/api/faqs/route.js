@@ -1,4 +1,3 @@
-"use client";
 
 export async function GET() {
   const faqs = [

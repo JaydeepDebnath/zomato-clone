@@ -1,5 +1,3 @@
-"use client";
-
 import { connectDB } from "@/lib/database";
 import Order from "@/models/Order";
 

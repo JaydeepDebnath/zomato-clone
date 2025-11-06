@@ -1,4 +1,3 @@
-"use client";
 import { connectDB } from "@/lib/database";
 import Restaurant from "@/models/Restaurant";
 
