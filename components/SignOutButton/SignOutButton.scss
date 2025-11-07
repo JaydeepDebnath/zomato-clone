@@ -1,0 +1,46 @@
+.signoutButton {
+  padding: 0.8rem 1.4rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: white;
+  display: inline-block;
+  min-width: 120px;
+  text-align: center;
+
+  &.signedIn {
+    background: linear-gradient(135deg, #ef4444, #dc2626); // red
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(239, 68, 68, 0.4);
+    }
+  }
+
+  &.notSignedIn {
+    background: linear-gradient(135deg, #4f46e5, #6366f1); // indigo
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(99, 102, 241, 0.4);
+    }
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
+
+@media (max-width: 480px) {
+  .signoutButton {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.1rem;
+  }
+}
