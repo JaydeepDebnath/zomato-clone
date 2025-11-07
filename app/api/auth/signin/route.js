@@ -8,7 +8,18 @@ export async function POST(req) {
   try {
     await connectDB();
 
-    const { email, password } = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ message: "Invalid JSON" }, { status: 400 });
+    }
+
+    const { email, password } = body;
+
+    if (!email || !password) {
+      return NextResponse.json({ message: "Email and password are required" }, { status: 400 });
+    }
 
     const user = await User.findOne({ email });
     if (!user) {
@@ -24,14 +35,17 @@ export async function POST(req) {
       id: user._id,
       name: user.name,
       email: user.email,
-      isAdmin: user.isAdmin,
-    });
+      isAdmin: user.isAdmin,},
+      process.env.JWT_SECRET,
+      { expiresIn:"7d" }
+    );
 
     const response = NextResponse.json({ message: "Signed in successfully" });
     response.cookies.set("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 60,
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60, 
       path: "/",
     });
 
