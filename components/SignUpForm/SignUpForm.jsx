@@ -30,6 +30,7 @@ export default function SignUpForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
+        credentials: "include",
       });
 
       const data = await res.json();
@@ -40,7 +41,15 @@ export default function SignUpForm() {
       }
 
       setSuccess("Account created successfully!");
-      setTimeout(() => router.push("/signin"), 1500);
+      setTimeout(async () => {
+      const cookies = document.cookie;
+      if (cookies.includes("token=")) {
+      router.push("/dashboard");
+      } else {
+      console.warn("Token not yet available — retrying...");
+      setTimeout(() => router.push("/dashboard"), 500);
+      }
+}, 300);
     } catch (err) {
       console.error("Signup error:", err);
       setError("Something went wrong. Try again.");

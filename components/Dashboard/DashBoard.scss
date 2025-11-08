@@ -1,0 +1,50 @@
+.dashboard {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc, #eef2ff);
+  padding: 2rem;
+
+  .dashboard-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    padding: 2.5rem;
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    transition: all 0.3s ease-in-out;
+
+    &:hover {
+      transform: translateY(-4px);
+    }
+
+    .dashboard-title {
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .dashboard-email {
+      font-size: 1rem;
+      color: #4b5563;
+      margin: 0.8rem 0;
+    }
+
+    .dashboard-role {
+      font-weight: 500;
+      color: #2563eb;
+      margin-bottom: 1.5rem;
+    }
+
+    .signout-wrapper {
+      margin-top: 1.5rem;
+    }
+  }
+
+  .dashboard-loading {
+    font-size: 1.2rem;
+    color: #4b5563;
+  }
+}

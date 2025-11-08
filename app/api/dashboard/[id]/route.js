@@ -2,12 +2,11 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/database";
 import User from "@/models/User";
 
-export async function GET(req, { params }) {
+export async function GET(req, context) {
   try {
     await connectDB();
-    const { id } = params;
-    console.log("Requested user ID:", id);
 
+    const { id } = await context.params;
     if (!id) {
       return NextResponse.json({ error: "Missing user ID" }, { status: 400 });
     }

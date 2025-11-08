@@ -9,7 +9,6 @@ export default function SignOutButton() {
   const [loading, setLoading] = useState(false);
   const [isSignedIn, setIsSignedIn] = useState(false);
 
-  // ✅ Check login status (example: via cookie or localStorage)
   useEffect(() => {
     const token = document.cookie
       .split("; ")
@@ -20,8 +19,8 @@ export default function SignOutButton() {
   const handleSignOut = async () => {
     setLoading(true);
     try {
-      await fetch("/api/auth/signout", { method: "POST" });
-      router.push("/login");
+      await fetch("/api/auth/signout", { method: "POST" ,credentials: "include"  });
+      router.push("/signin");
     } catch (err) {
       console.error("Sign out error:", err);
     } finally {
@@ -36,14 +35,10 @@ export default function SignOutButton() {
   return (
     <button
       onClick={isSignedIn ? handleSignOut : handleSignUpRedirect}
-      className={`signoutButton ${isSignedIn ? "signedIn" : "notSignedIn"}`}
+      className={`signout-button ${isSignedIn ? "signed-in" : "not-signed-in"}`}
       disabled={loading}
     >
-      {loading
-        ? "Signing out..."
-        : isSignedIn
-        ? "Sign Out"
-        : "Sign Up"}
+      {loading ? (isSignedIn ? "Signing out..." : "Redirecting...") : isSignedIn ? "Sign Out" : "Sign Up"}
     </button>
   );
 }

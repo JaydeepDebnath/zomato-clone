@@ -1,0 +1,42 @@
+.authPageContainer {
+  width: 100%;
+  max-width: 400px;
+  margin: 100px auto;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  transition: all 0.3s ease;
+
+  h1 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: #222;
+  }
+
+  .authSwitchText {
+    margin-top: 1.5rem;
+    font-size: 0.95rem;
+    color: #555;
+  }
+
+  .authSwitchLink {
+    color: #2563eb;
+    font-weight: 500;
+    text-decoration: none;
+    margin-left: 4px;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .authPageContainer {
+    margin: 60px 1rem;
+    padding: 1.5rem;
+  }
+}

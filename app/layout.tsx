@@ -1,4 +1,3 @@
-"use client";
 
 import "./globals.scss";
 import Header from "../components/Header/Header";

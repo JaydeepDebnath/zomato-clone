@@ -21,19 +21,24 @@ export default function SignInForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
+        credentials: "include", 
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        const data = await res.json();
         setError(data.message || "Invalid credentials");
-        setLoading(false);
         return;
       }
 
+      console.log("✅ Signed in successfully");
       router.push("/dashboard");
+      // Or use hard redirect to ensure page reloads:
+      // window.location.href = "/dashboard";
+
     } catch (err) {
       console.error("Sign in error:", err);
-      setError("Something went wrong");
+      setError("Something went wrong. Try again.");
     } finally {
       setLoading(false);
     }
@@ -63,6 +68,7 @@ export default function SignInForm() {
           {loading ? "Signing in..." : "Sign In"}
         </button>
       </form>
+
       {error && <p className="errorText">{error}</p>}
     </div>
   );

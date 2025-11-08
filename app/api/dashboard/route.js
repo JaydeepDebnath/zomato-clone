@@ -1,38 +1,37 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/database";
 import User from "@/models/User";
-import { verifyJWT } from "@/lib/auth";
 
 export async function GET(req) {
   try {
     await connectDB();
-    const cookieHeader = req.headers.get("cookie");
-    const token = cookieHeader
-      ?.split("; ")
-      .find(c => c.startsWith("token="))
-      ?.split("=")[1];
 
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { searchParams } = new URL(req.url);
+    const email = searchParams.get("email");
+    const name = searchParams.get("name");
+
+    if (!email && !name) {
+      return NextResponse.json(
+        { error: "Please provide an email or name parameter" },
+        { status: 400 }
+      );
     }
 
-    let decoded;
-    try {
-      decoded = verifyJWT(token);
-    } catch (err) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    const query = {};
+    if (email) query.email = email;
+    if (name) query.name = { $regex: new RegExp(name, "i") };
+
+    const users = await User.find(query)
+      .select("_id name email isAdmin")
+      .lean();
+
+    if (!users.length) {
+      return NextResponse.json({ error: "No users found" }, { status: 404 });
     }
 
-    const user = await User.findById(decoded.id).select("_id name email isAdmin").lean();
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    // Return minimal user info for dashboard verification
-    return NextResponse.json({ user });
+    return NextResponse.json({ users });
   } catch (err) {
-    console.error("Dashboard API error:", err);
+    console.error("Dashboard search API error:", err);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
