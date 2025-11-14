@@ -31,10 +31,8 @@ export default function SignInForm() {
         return;
       }
 
-      console.log("✅ Signed in successfully");
+      console.log("Signed in successfully");
       router.push("/dashboard");
-      // Or use hard redirect to ensure page reloads:
-      // window.location.href = "/dashboard";
 
     } catch (err) {
       console.error("Sign in error:", err);
