@@ -4,9 +4,36 @@ import Restaurant from "@/models/Restaurant";
 import { verifyJWT } from "@/lib/auth";
 
 export async function GET() {
-  await connectDB();
-  const data = await Restaurant.find();
-  return NextResponse.json(data);
+  {
+    await connectDB();
+
+    const url = new URL(req.url);
+    const search = url.searchParams.get("search") || "";
+    const page = Math.max(1, parseInt(url.searchParams.get("page") || "1"));
+    const limit = Math.max(1, parseInt(url.searchParams.get("limit") || "10"));
+    const sortBy = url.searchParams.get("sort") || "-createdAt";
+
+    const filter = {};
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { cuisine: { $regex: search, $options: "i" } },
+        { location: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const total = await Restaurant.countDocuments(filter);
+    const restaurants = await Restaurant.find(filter)
+      .sort(sortBy)
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean();
+
+    return NextResponse.json({
+      data: restaurants,
+      meta: { page, limit, total, pages: Math.ceil(total / limit) },
+    });
+  }
 }
 
 export async function POST(req) {

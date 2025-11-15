@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/database";
-import FAQ from "@/models/FAQ";
+// import FAQ from "@/models/FAQ";
 import { verifyJWT } from "@/lib/auth";
 
 export async function GET() {

@@ -1,27 +1,22 @@
+"use client";
 import AdminTable from "@/components/admin/AdminTable";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-export default async function RestaurantsPage() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/restaurant`, {
-    cache: "no-store",
-    credentials: "include",
-  });
-
-  const restaurants = await res.json();
+export default function RestaurantsPageClient() {
+  const router = useRouter();
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-semibold">Restaurants</h1>
-        <Link href="/admin/restaurants/new" className="px-4 py-2 bg-black text-white rounded-md">
-          + Add Restaurant
-        </Link>
+        <h1 className="text-2xl font-semibold">Restaurants</h1>
+        <button onClick={()=>router.push('/admin/restaurants/new')} className="px-4 py-2 bg-black text-white rounded">Add Restaurant</button>
       </div>
 
       <AdminTable
-        data={restaurants}
-        columns={["Name", "Cuisine", "Location", "Rating"]}
-        onView={(id) => (window.location.href = `/admin/restaurants/${id}`)}
+        endpoint="/api/restaurant"
+        columns={["Name", "cuisine", "location", "rating"]}
+        pageSize={10}
+        onView={(id)=>router.push(`/admin/restaurants/${id}`)}
       />
     </div>
   );
