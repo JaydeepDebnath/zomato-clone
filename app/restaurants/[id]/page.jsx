@@ -1,63 +1,47 @@
-"use client";
+import { NextResponse } from "next/server";
+import { connectDB } from "@/lib/database";
+import Restaurant from "@/models/Restaurant";
+import { verifyJWT } from "@/lib/auth";
 
-import React, { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import Image from "next/image";
-import "./RestaurantPage.scss"; 
+export async function GET(req, { params }) {
+  await connectDB();
+  const item = await Restaurant.findById(params.id);
+  if (!item) return NextResponse.json({ message: "Not found" }, { status: 404 });
 
-const RestaurantPage = () => {
-  const { id } = useParams(); 
-  const [restaurant, setRestaurant] = useState(null);
-  const [loading, setLoading] = useState(true);
+  return NextResponse.json(item);
+}
 
-  useEffect(() => {
-    if (!id) return;
+export async function PUT(req, { params }) {
+  await connectDB();
 
-    fetch(`/api/restaurants/${id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setRestaurant(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch restaurant:", err);
-        setLoading(false);
-      });
-  }, [id]);
+  const token = req.cookies.get("token")?.value;
+  if (!token) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-  if (loading) return <p>Loading restaurant details...</p>;
-  if (!restaurant) return <p>Restaurant not found.</p>;
+  let user;
+  try {
+    user = verifyJWT(token);
+  } catch {
+    return NextResponse.json({ message: "Invalid token" }, { status: 401 });
+  }
 
-  return (
-    <div className="restaurantPage">
-      <div className="restaurantHeader">
-        <Image
-          src={restaurant.image || "/assets/images/default.png"}
-          alt={restaurant.name}
-          width={600}
-          height={400}
-          className="restaurantImage"
-        />
-        <div className="restaurantInfo">
-          <h1>{restaurant.name}</h1>
-          <p className="cuisine">{restaurant.cuisine}</p>
-          <p className="location">📍 {restaurant.location}</p>
-          <p className="rating">⭐ {restaurant.rating.toFixed(1)}</p>
-        </div>
-      </div>
+  if (!user.isAdmin) {
+    return NextResponse.json({ message: "Admin only" }, { status: 403 });
+  }
 
-      {/* Optional sections */}
-      <div className="restaurantMenu">
-        <h2>Menu / Items</h2>
-        <p>Coming soon...</p>
-      </div>
+  const body = await req.json();
+  const updated = await Restaurant.findByIdAndUpdate(params.id, body, { new: true });
+  return NextResponse.json(updated);
+}
 
-      <div className="restaurantReviews">
-        <h2>Reviews</h2>
-        <p>Coming soon...</p>
-      </div>
-    </div>
-  );
-};
+export async function DELETE(req, { params }) {
+  await connectDB();
 
-export default RestaurantPage;
+  const token = req.cookies.get("token")?.value;
+  if (!token) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+
+  const user = verifyJWT(token);
+  if (!user.isAdmin) return NextResponse.json({ message: "Admin only" }, { status: 403 });
+
+  await Restaurant.findByIdAndDelete(params.id);
+  return NextResponse.json({ message: "Deleted" });
+}

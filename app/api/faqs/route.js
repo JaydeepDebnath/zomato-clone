@@ -1,10 +1,27 @@
+import { NextResponse } from "next/server";
+import { connectDB } from "@/lib/database";
+import FAQ from "@/models/FAQ";
+import { verifyJWT } from "@/lib/auth";
 
 export async function GET() {
-  const faqs = [
-    { id: 1, title: "Order Online", infos: "Stay home and order to your doorstep" },
-    { id: 2, title: "Nightlife", infos: "Explore the city's top nightlife outlets" },
-    { id: 3, title: "Dining", infos: "View the city's favourite venues" },
-  ];
+  await connectDB();
+  const faqs = await FAQ.find();
+  return NextResponse.json(faqs);
+}
 
-  return new Response(JSON.stringify(faqs), { status: 200 });
+export async function POST(req) {
+  await connectDB();
+
+  const token = req.cookies.get("token")?.value;
+  if (!token) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+
+  const user = verifyJWT(token);
+  if (!user.isAdmin) {
+    return NextResponse.json({ message: "Admin only" }, { status: 403 });
+  }
+
+  const data = await req.json();
+  const faq = await FAQ.create(data);
+
+  return NextResponse.json(faq, { status: 201 });
 }

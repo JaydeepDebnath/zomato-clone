@@ -1,13 +1,12 @@
-"use client";
-
+import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/database";
 import Restaurant from "@/models/Restaurant";
 
-export async function GET(req) {
-  const cityName = decodeURIComponent(req.url.split("/").pop());
+export async function GET(req, { params }) {
   await connectDB();
 
-  const restaurants = await Restaurant.find({ location: cityName });
+  const city = params.name;
+  const list = await Restaurant.find({ location: city });
 
-  return new Response(JSON.stringify(restaurants), { status: 200 });
+  return NextResponse.json(list);
 }

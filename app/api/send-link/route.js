@@ -1,55 +1,40 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
+import { connectDB } from "@/lib/database";
+import User from "@/models/User";
+import { signJWT } from "@/lib/auth";
 
 export async function POST(req) {
-  try {
-    const { type, value } = await req.json();
+  await connectDB();
 
-    if (!value || !type) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
+  const { email } = await req.json();
+  const user = await User.findOne({ email });
 
-    if (type === "email") {
-      const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: process.env.SMTP_USER, 
-          pass: process.env.SMTP_PASS,
-        },
-      });
+  if (!user)
+    return NextResponse.json({ message: "Email not registered" }, { status: 404 });
 
-      const mailOptions = {
-        from: process.env.SMTP_USER,
-        to: value,
-        subject: "Your login link from Zomato Clone 🍽️",
-        html: `
-          <div style="font-family:Arial,sans-serif;padding:20px">
-            <h2>Welcome back!</h2>
-            <p>Click below to sign in instantly:</p>
-            <a href="${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/signin" 
-              style="background:#E23744;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;">
-              Sign In
-            </a>
-            <p>Link valid for 10 minutes.</p>
-          </div>
-        `,
-      };
+  const token = signJWT(
+    { id: user._id },
+    process.env.JWT_SECRET,
+    { expiresIn: "15m" }
+  );
 
-      await transporter.sendMail(mailOptions);
-      return NextResponse.json({ message: "Email sent successfully" });
-    }
+  const resetLink = `${process.env.NEXT_PUBLIC_BASE_URL}/reset-password?token=${token}`;
 
-    if (type === "phone") {
-      console.log(`Would send link to phone: ${value}`);
-      return NextResponse.json({ message: "Phone link logic placeholder" });
-    }
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.MAIL_USER,
+      pass: process.env.MAIL_PASS,
+    },
+  });
 
-    return NextResponse.json({ error: "Invalid type" }, { status: 400 });
-  } catch (err) {
-    console.error("Send link error:", err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
+  await transporter.sendMail({
+    from: process.env.MAIL_USER,
+    to: email,
+    subject: "Password Reset Link",
+    html: `<p>Click below:</p><a href="${resetLink}">${resetLink}</a>`,
+  });
+
+  return NextResponse.json({ message: "Email sent" });
 }

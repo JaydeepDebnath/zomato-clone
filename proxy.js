@@ -6,11 +6,8 @@ export function proxy(request) {
   const token = request.cookies.get("token")?.value;
   const url = request.nextUrl.pathname;
 
-  // Protect dashboard & API routes
   if (url.startsWith("/dashboard") || url.startsWith("/api/dashboard")) {
-    if (!token) {
-      return NextResponse.redirect(new URL("/signin", request.url));
-    }
+    if (!token) return redirect("/signin")
     try {
       verifyJWT(token);
       return NextResponse.next();
