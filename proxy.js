@@ -1,26 +1,30 @@
 import { NextResponse } from "next/server";
 import { verifyJWT } from "@/lib/auth";
 
-// MUST be named "proxy", NOT "middleware"
-export function proxy(request) {
-  const token = request.cookies.get("token")?.value;
-  const url = request.nextUrl.pathname;
+// Everything here runs on Edge
+export const config = {
+  matcher: ["/admin/:path*", "/api/restaurant", "/api/restaurant/:path*"],
+};
 
-  if (url.startsWith("/dashboard") || url.startsWith("/api/dashboard")) {
-    if (!token) return redirect("/signin")
-    try {
-      verifyJWT(token);
-      return NextResponse.next();
-    } catch (err) {
-      console.error("Invalid or expired token:", err.message);
-      return NextResponse.redirect(new URL("/signin", request.url));
-    }
+export async function middleware(req) {
+  const token = req.cookies.get("token")?.value;
+
+  // No token → not authenticated
+  if (!token) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  return NextResponse.next();
-}
+  try {
+    const user = await verifyJWT(token);
 
-// MUST include matcher for proxy
-export const config = {
-  matcher: ["/dashboard/:path*", "/api/dashboard/:path*"],
-};
+    // Block route if user is not admin
+    if (req.nextUrl.pathname.startsWith("/admin") && !user.isAdmin) {
+      return NextResponse.json({ message: "Admin only" }, { status: 403 });
+    }
+
+    // Allow request to continue
+    return NextResponse.next();
+  } catch (err) {
+    return NextResponse.json({ message: "Invalid or expired token" }, { status: 401 });
+  }
+}
